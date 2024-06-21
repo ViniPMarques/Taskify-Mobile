@@ -37,10 +37,9 @@ class TaskService {
       ''');
   }
 
-  Future<void> addTask(Task task) async {
+  Future<int> addTask(Task task) async {
     final db = await database;
-    await db.insert('tasks', task.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.replace);
+    return await db.insert('tasks', task.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<void> updateTask(Task task) async {

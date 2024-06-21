@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/notification_service.dart';
 import 'add_task_screen.dart';
 import '../main.dart';
 import '../models/task_model.dart';
@@ -37,7 +38,22 @@ class _HomeScreenState extends State<HomeScreen> {
       dueDate: task.dueDate,
       dueTime: task.dueTime,
     );
-    await TaskService.instance.addTask(newTask);
+    int newTaskId = await TaskService.instance.addTask(newTask);
+    if (newTask.dueDate != null && newTask.dueTime != null) {
+      DateTime scheduledDateTime = DateTime(
+        newTask.dueDate!.year,
+        newTask.dueDate!.month,
+        newTask.dueDate!.day,
+        newTask.dueTime!.hour,
+        newTask.dueTime!.minute,
+      );
+      NotificationService().scheduleNotification(
+        newTaskId,
+        newTask.title,
+        newTask.description ?? '',
+        scheduledDateTime,
+      );
+    }
     _loadTasks();
   }
 
@@ -54,21 +70,21 @@ class _HomeScreenState extends State<HomeScreen> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: Text("Edit Task"),
+              title: Text("Editar Tarefa"),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TextField(
                     controller: titleController,
-                    decoration: InputDecoration(labelText: 'Title'),
+                    decoration: InputDecoration(labelText: 'Titulo'),
                   ),
                   TextField(
                     controller: descriptionController,
-                    decoration: InputDecoration(labelText: 'Description'),
+                    decoration: InputDecoration(labelText: 'Descrição'),
                   ),
                   Row(
                     children: [
-                      Text("Due Date:"),
+                      Text("Definir Data:"),
                       Checkbox(
                         value: hasDueDate,
                         onChanged: (bool? value) {
@@ -89,7 +105,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   if (hasDueDate) ...[
                     Row(
                       children: [
-                        Text("Date:"),
+                        Text("Data:"),
                         SizedBox(width: 10),
                         TextButton(
                           onPressed: () async {
@@ -111,7 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     Row(
                       children: [
-                        Text("Time:"),
+                        Text("Horário:"),
                         SizedBox(width: 10),
                         TextButton(
                           onPressed: () async {
@@ -137,7 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: Text('Cancel'),
+                  child: Text('Cancelar'),
                 ),
                 TextButton(
                   onPressed: () async {
@@ -152,7 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     _loadTasks();
                     Navigator.of(context).pop();
                   },
-                  child: Text('Save'),
+                  child: Text('Salvar'),
                 ),
               ],
             );
@@ -182,9 +198,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Text(task.description ?? ''),
                   if (task.dueDate != null)
-                    Text("Due Date: ${task.dueDate!.toLocal().toString().split(' ')[0]}"),
+                    Text("Data Definida: ${task.dueDate!.toLocal().toString().split(' ')[0]}"),
                   if (task.dueTime != null)
-                    Text("Due Time: ${task.dueTime!.format(context)}"),
+                    Text("Horário Definido: ${task.dueTime!.format(context)}"),
                 ],
               ),
               trailing: Row(

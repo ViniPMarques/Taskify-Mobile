@@ -1,9 +1,12 @@
+import 'package:dispositivos_moveis/services/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/calendar_screen.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await NotificationService().initNotification();
   runApp(TaskifyApp());
 }
 
@@ -15,7 +18,7 @@ class TaskifyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: LoginScreen(),
+      home: HomeScreen(),
     );
   }
 }
