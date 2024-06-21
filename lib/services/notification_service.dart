@@ -46,4 +46,8 @@ class NotificationService {
       uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
     );
   }
+
+  Future<void> cancelNotification(int id) async {
+    await flutterLocalNotificationsPlugin.cancel(id);
+  }
 }
