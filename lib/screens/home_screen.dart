@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../services/notification_service.dart';
 import 'add_task_screen.dart';
 import '../main.dart';
@@ -178,6 +180,16 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Future<void> _pickImage(Task task) async {
+    final ImagePicker _picker = ImagePicker();
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      task.imagePath = image.path;
+      await TaskService.instance.updateTask(task);
+      _loadTasks();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -201,30 +213,30 @@ class _HomeScreenState extends State<HomeScreen> {
                     Text("Data Definida: ${task.dueDate!.toLocal().toString().split(' ')[0]}"),
                   if (task.dueTime != null)
                     Text("Horário Definido: ${task.dueTime!.format(context)}"),
+                  if (task.imagePath != null)
+                    Image.file(File(task.imagePath!)),
                 ],
               ),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.copy),
-                    onPressed: () {
-                      _duplicateTask(task);
-                    },
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.edit),
-                    onPressed: () {
-                      _editTask(task);
-                    },
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.delete),
-                    onPressed: () {
-                      _deleteTask(task.id!);
-                    },
-                  ),
-                ],
+              trailing: PopupMenuButton<String>(
+                onSelected: (String value) async {
+                  if (value == 'Edit') {
+                    _editTask(task);
+                  } else if (value == 'Duplicate') {
+                    _duplicateTask(task);
+                  } else if (value == 'Delete') {
+                    _deleteTask(task.id!);
+                  } else if (value == 'Image') {
+                    await _pickImage(task);
+                  }
+                },
+                itemBuilder: (BuildContext context) {
+                  return {'Edit', 'Duplicate', 'Delete', 'Image'}.map((String choice) {
+                    return PopupMenuItem<String>(
+                      value: choice,
+                      child: Text(choice),
+                    );
+                  }).toList();
+                },
               ),
             ),
           );
