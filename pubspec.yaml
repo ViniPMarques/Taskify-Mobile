@@ -30,13 +30,14 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_local_notifications: ^17.1.2
+  flutter_local_notifications: ^17.1.1+1
   intl: ^0.19.0
   table_calendar: ^3.0.0
   sqflite: ^2.0.0+4
   path: ^1.9.0
   path_provider: ^2.0.11
-  timezone: ^0.9.3
+  timezone: ^0.9.4
+  local_auth: ^2.1.5
 #  firebase_core: 3.1.0
 #  cloud_firestore: 5.0.1
 

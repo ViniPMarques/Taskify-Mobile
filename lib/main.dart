@@ -1,5 +1,6 @@
-import 'package:dispositivos_moveis/services/notification_service.dart';
+import 'package:dispositivos_moveis/screens/biometric_auth_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:dispositivos_moveis/services/notification_service.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/calendar_screen.dart';
@@ -18,7 +19,11 @@ class TaskifyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: HomeScreen(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => BiometricAuthScreen(),
+        '/home': (context) => HomeScreen(),
+      },
     );
   }
 }
