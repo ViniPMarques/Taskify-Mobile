@@ -1,11 +1,10 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import '../services/notification_service.dart';
 import 'add_task_screen.dart';
 import '../main.dart';
 import '../models/task_model.dart';
 import '../services/task_service.dart';
+import 'package:image_picker/image_picker.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -73,82 +72,84 @@ class _HomeScreenState extends State<HomeScreen> {
           builder: (context, setState) {
             return AlertDialog(
               title: Text("Editar Tarefa"),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: titleController,
-                    decoration: InputDecoration(labelText: 'Titulo'),
-                  ),
-                  TextField(
-                    controller: descriptionController,
-                    decoration: InputDecoration(labelText: 'Descrição'),
-                  ),
-                  Row(
-                    children: [
-                      Text("Definir Data:"),
-                      Checkbox(
-                        value: hasDueDate,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            hasDueDate = value ?? false;
-                            if (!hasDueDate) {
-                              selectedDate = null;
-                              selectedTime = null;
-                            } else {
-                              selectedDate = DateTime.now();
-                              selectedTime = TimeOfDay.now();
-                            }
-                          });
-                        },
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: titleController,
+                      decoration: InputDecoration(labelText: 'Titulo'),
+                    ),
+                    TextField(
+                      controller: descriptionController,
+                      decoration: InputDecoration(labelText: 'Descrição'),
+                    ),
+                    Row(
+                      children: [
+                        Text("Definir Data:"),
+                        Checkbox(
+                          value: hasDueDate,
+                          onChanged: (bool? value) {
+                            setState(() {
+                              hasDueDate = value ?? false;
+                              if (!hasDueDate) {
+                                selectedDate = null;
+                                selectedTime = null;
+                              } else {
+                                selectedDate = DateTime.now();
+                                selectedTime = TimeOfDay.now();
+                              }
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                    if (hasDueDate) ...[
+                      Row(
+                        children: [
+                          Text("Data:"),
+                          SizedBox(width: 10),
+                          TextButton(
+                            onPressed: () async {
+                              DateTime? pickedDate = await showDatePicker(
+                                context: context,
+                                initialDate: selectedDate ?? DateTime.now(),
+                                firstDate: DateTime(2000),
+                                lastDate: DateTime(2101),
+                              );
+                              if (pickedDate != null) {
+                                setState(() {
+                                  selectedDate = pickedDate;
+                                });
+                              }
+                            },
+                            child: Text("${selectedDate!.toLocal()}".split(' ')[0]),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Text("Horário:"),
+                          SizedBox(width: 10),
+                          TextButton(
+                            onPressed: () async {
+                              TimeOfDay? pickedTime = await showTimePicker(
+                                context: context,
+                                initialTime: selectedTime ?? TimeOfDay.now(),
+                              );
+                              if (pickedTime != null) {
+                                setState(() {
+                                  selectedTime = pickedTime;
+                                });
+                              }
+                            },
+                            child: Text("${selectedTime!.format(context)}"),
+                          ),
+                        ],
                       ),
                     ],
-                  ),
-                  if (hasDueDate) ...[
-                    Row(
-                      children: [
-                        Text("Data:"),
-                        SizedBox(width: 10),
-                        TextButton(
-                          onPressed: () async {
-                            DateTime? pickedDate = await showDatePicker(
-                              context: context,
-                              initialDate: selectedDate ?? DateTime.now(),
-                              firstDate: DateTime(2000),
-                              lastDate: DateTime(2101),
-                            );
-                            if (pickedDate != null) {
-                              setState(() {
-                                selectedDate = pickedDate;
-                              });
-                            }
-                          },
-                          child: Text("${selectedDate!.toLocal()}".split(' ')[0]),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Text("Horário:"),
-                        SizedBox(width: 10),
-                        TextButton(
-                          onPressed: () async {
-                            TimeOfDay? pickedTime = await showTimePicker(
-                              context: context,
-                              initialTime: selectedTime ?? TimeOfDay.now(),
-                            );
-                            if (pickedTime != null) {
-                              setState(() {
-                                selectedTime = pickedTime;
-                              });
-                            }
-                          },
-                          child: Text("${selectedTime!.format(context)}"),
-                        ),
-                      ],
-                    ),
                   ],
-                ],
+                ),
               ),
               actions: [
                 TextButton(
@@ -180,11 +181,13 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Future<void> _pickImage(Task task) async {
-    final ImagePicker _picker = ImagePicker();
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      task.imagePath = image.path;
+  void _addImageToTask(Task task) async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      String imagePath = pickedFile.path;
+      task.imagePath = imagePath;
       await TaskService.instance.updateTask(task);
       _loadTasks();
     }
@@ -198,6 +201,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       drawer: HomeDrawer(),
       body: ListView.builder(
+        padding: EdgeInsets.only(bottom: 56.0), // Add padding to avoid overlap with button
         itemCount: _tasks.length,
         itemBuilder: (context, index) {
           final task = _tasks[index];
@@ -213,47 +217,56 @@ class _HomeScreenState extends State<HomeScreen> {
                     Text("Data Definida: ${task.dueDate!.toLocal().toString().split(' ')[0]}"),
                   if (task.dueTime != null)
                     Text("Horário Definido: ${task.dueTime!.format(context)}"),
-                  if (task.imagePath != null)
-                    Image.file(File(task.imagePath!)),
                 ],
               ),
-              trailing: PopupMenuButton<String>(
-                onSelected: (String value) async {
-                  if (value == 'Edit') {
-                    _editTask(task);
-                  } else if (value == 'Duplicate') {
-                    _duplicateTask(task);
-                  } else if (value == 'Delete') {
-                    _deleteTask(task.id!);
-                  } else if (value == 'Image') {
-                    await _pickImage(task);
+              trailing: DropdownButton<String>(
+                icon: Icon(Icons.more_vert),
+                onChanged: (String? newValue) {
+                  switch (newValue) {
+                    case 'Duplicar':
+                      _duplicateTask(task);
+                      break;
+                    case 'Editar':
+                      _editTask(task);
+                      break;
+                    case 'Deletar':
+                      _deleteTask(task.id!);
+                      break;
+                    case 'Adicionar Imagem':
+                      _addImageToTask(task);
+                      break;
                   }
                 },
-                itemBuilder: (BuildContext context) {
-                  return {'Edit', 'Duplicate', 'Delete', 'Image'}.map((String choice) {
-                    return PopupMenuItem<String>(
-                      value: choice,
-                      child: Text(choice),
-                    );
-                  }).toList();
-                },
+                items: <String>['Duplicar', 'Editar', 'Deletar', 'Adicionar Imagem']
+                    .map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
               ),
             ),
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => AddTaskScreen()),
-          ).then((value) {
-            if (value != null) {
-              _loadTasks();
-            }
-          });
-        },
-        child: Icon(Icons.add),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: SizedBox(
+        width: MediaQuery.of(context).size.width,
+        height: 56.0,
+        child: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AddTaskScreen()),
+            ).then((value) {
+              if (value != null) {
+                _loadTasks();
+              }
+            });
+          },
+          child: Icon(Icons.add),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+        ),
       ),
     );
   }

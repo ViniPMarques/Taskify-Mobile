@@ -19,7 +19,7 @@ class TaskifyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      initialRoute: '/',
+      initialRoute: '/home',
       routes: {
         '/': (context) => BiometricAuthScreen(),
         '/home': (context) => HomeScreen(),
