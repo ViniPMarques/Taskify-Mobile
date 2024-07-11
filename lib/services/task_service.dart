@@ -20,7 +20,7 @@ class TaskService {
     String path = join(await getDatabasesPath(), 'taskify.db');
     return await openDatabase(
       path,
-      version: 2, // updated version
+      version: 2,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );

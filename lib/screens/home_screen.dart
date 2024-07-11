@@ -207,7 +207,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       drawer: HomeDrawer(),
       body: Padding(
-        padding: const EdgeInsets.only(bottom: 60.0), // Adjust padding to prevent overlap
+        padding: const EdgeInsets.only(bottom: 60.0),
         child: ListView.builder(
           itemCount: _tasks.length,
           itemBuilder: (context, index) {
