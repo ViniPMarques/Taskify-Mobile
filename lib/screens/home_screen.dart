@@ -33,6 +33,13 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadTasks();
   }
 
+  void _deleteImage(Task task) async {
+    task.imagePath = null;
+    await TaskService.instance.updateTask(task);
+    _loadTasks();
+  }
+
+
   void _duplicateTask(Task task) async {
     Task newTask = Task(
       title: task.title,
@@ -239,6 +246,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       case 'add_image':
                         _addImage(task);
                         break;
+                      case 'delete_image':
+                        _deleteImage(task);
+                        break;
                     }
                   },
                   itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
@@ -258,6 +268,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       value: 'add_image',
                       child: Text('Adicionar Imagem'),
                     ),
+                    if (task.imagePath != null)
+                      const PopupMenuItem<String>(
+                        value: 'delete_image',
+                        child: Text('Remover Imagem'),
+                      ),
                   ],
                 ),
               ),
