@@ -23,7 +23,6 @@ class NotificationService {
 
     await flutterLocalNotificationsPlugin.initialize(initializationSettings);
 
-    // Inicialize as zonas de tempo
     tz.initializeTimeZones();
   }
 
@@ -36,7 +35,7 @@ class NotificationService {
       const NotificationDetails(
         android: AndroidNotificationDetails(
           'main_channel',
-          'Main Channel', // Channel name
+          'Main Channel',
           channelDescription: 'Main channel notifications',
           importance: Importance.max,
           priority: Priority.max,

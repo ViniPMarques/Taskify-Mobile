@@ -20,8 +20,9 @@ class TaskService {
     String path = join(await getDatabasesPath(), 'taskify.db');
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
     );
   }
 
@@ -32,15 +33,23 @@ class TaskService {
           title TEXT,
           description TEXT,
           dueDate TEXT,
-          dueTime TEXT
+          dueTime TEXT,
+          imagePath TEXT
       )
-      ''');
+    ''');
   }
 
-  Future<void> addTask(Task task) async {
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute('''
+        ALTER TABLE tasks ADD COLUMN imagePath TEXT;
+      ''');
+    }
+  }
+
+  Future<int> addTask(Task task) async {
     final db = await database;
-    await db.insert('tasks', task.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.replace);
+    return await db.insert('tasks', task.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<void> updateTask(Task task) async {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/task_model.dart';
 import '../services/task_service.dart';
+import '../services/notification_service.dart';
 
 class AddTaskScreen extends StatefulWidget {
   @override
@@ -18,6 +19,17 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
 
   void _saveTask() async {
     if (_formKey.currentState!.validate()) {
+      DateTime? scheduledDate;
+      if (_hasDueDate && _dueDate != null && _dueTime != null) {
+        scheduledDate = DateTime(
+          _dueDate!.year,
+          _dueDate!.month,
+          _dueDate!.day,
+          _dueTime!.hour,
+          _dueTime!.minute,
+        );
+      }
+
       Task newTask = Task(
         title: _title,
         description: _description,
@@ -25,9 +37,20 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
         dueTime: _hasDueDate ? _dueTime : null,
       );
       await TaskService.instance.addTask(newTask);
+
+      if (scheduledDate != null) {
+        NotificationService().scheduleNotification(
+          newTask.id ?? 0,
+          'Tarefa Pendente: $_title',
+          _description,
+          scheduledDate,
+        );
+      }
+
       Navigator.pop(context, newTask);
     }
   }
+
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? pickedDate = await showDatePicker(
@@ -117,7 +140,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                 ),
                 Text(
                   _dueTime != null
-                      ? 'Data Vencimento: ${_dueTime!.format(context)}'
+                      ? 'Hora Vencimento: ${_dueTime!.format(context)}'
                       : 'Nenhum horário definido',
                 ),
               ],

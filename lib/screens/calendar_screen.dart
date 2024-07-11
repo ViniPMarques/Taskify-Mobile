@@ -30,16 +30,22 @@ class _CalendarScreenState extends State<CalendarScreen> {
     Map<DateTime, List<Task>> taskMap = {};
     for (var task in tasks) {
       if (task.dueDate != null) {
-        if (!taskMap.containsKey(task.dueDate)) {
-          taskMap[task.dueDate!] = [];
+        DateTime taskDate = DateTime(task.dueDate!.year, task.dueDate!.month, task.dueDate!.day);
+        if (!taskMap.containsKey(taskDate)) {
+          taskMap[taskDate] = [];
         }
-        taskMap[task.dueDate!]!.add(task);
+        taskMap[taskDate]!.add(task);
       }
     }
     setState(() {
       _tasksByDate = taskMap;
-      _selectedTasks = _tasksByDate[_selectedDay] ?? [];
+      _selectedTasks = _tasksByDate[DateTime(_selectedDay.year, _selectedDay.month, _selectedDay.day)] ?? [];
     });
+  }
+
+  void _deleteTask(int id) async {
+    await TaskService.instance.deleteTask(id);
+    _loadTasks();
   }
 
   @override
@@ -59,13 +65,15 @@ class _CalendarScreenState extends State<CalendarScreen> {
               return isSameDay(_selectedDay, day);
             },
             eventLoader: (day) {
-              return _tasksByDate[day] ?? [];
+              DateTime cleanDay = DateTime(day.year, day.month, day.day);
+              return _tasksByDate[cleanDay] ?? [];
             },
             onDaySelected: (selectedDay, focusedDay) {
               setState(() {
                 _selectedDay = selectedDay;
                 _focusedDay = focusedDay;
-                _selectedTasks = _tasksByDate[selectedDay] ?? [];
+                DateTime cleanSelectedDay = DateTime(_selectedDay.year, _selectedDay.month, _selectedDay.day);
+                _selectedTasks = _tasksByDate[cleanSelectedDay] ?? [];
               });
             },
             calendarFormat: CalendarFormat.month,
@@ -78,6 +86,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 return ListTile(
                   title: Text(task.title),
                   subtitle: Text(task.description ?? ''),
+                  trailing: IconButton(
+                    icon: Icon(Icons.delete),
+                    onPressed: () {
+                      _deleteTask(task.id!);
+                    },
+                  ),
                 );
               },
             ),
