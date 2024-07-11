@@ -78,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   TextField(
                     controller: titleController,
-                    decoration: InputDecoration(labelText: 'Titulo'),
+                    decoration: InputDecoration(labelText: 'Título'),
                   ),
                   TextField(
                     controller: descriptionController,
@@ -97,7 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               selectedTime = null;
                             } else {
                               selectedDate = DateTime.now();
-                              selectedTime = TimeOfDay.now();
+                              selectedTime = null;
                             }
                           });
                         },
@@ -123,7 +123,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               });
                             }
                           },
-                          child: Text("${selectedDate!.toLocal()}".split(' ')[0]),
+                          child: Text(selectedDate != null ? "${selectedDate?.toLocal()}".split(' ')[0] : "Selecione uma data"),
                         ),
                       ],
                     ),
@@ -135,7 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           onPressed: () async {
                             TimeOfDay? pickedTime = await showTimePicker(
                               context: context,
-                              initialTime: selectedTime ?? TimeOfDay.now(),
+                              initialTime: selectedTime ?? TimeOfDay(hour: 0, minute: 0),
                             );
                             if (pickedTime != null) {
                               setState(() {
@@ -143,7 +143,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               });
                             }
                           },
-                          child: Text("${selectedTime!.format(context)}"),
+                          child: Text(selectedTime != null ? "${selectedTime?.format(context)}" : "Selecione um horário"),
                         ),
                       ],
                     ),
@@ -180,6 +180,7 @@ class _HomeScreenState extends State<HomeScreen> {
       },
     );
   }
+
 
   Future<void> _addImage(Task task) async {
     final picker = ImagePicker();

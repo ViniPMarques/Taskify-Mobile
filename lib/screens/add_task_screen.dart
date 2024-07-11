@@ -40,7 +40,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
 
       if (scheduledDate != null) {
         NotificationService().scheduleNotification(
-          newTask.id ?? 0, // Supondo que Task tenha uma propriedade 'id'
+          newTask.id ?? 0,
           'Tarefa Pendente: $_title',
           _description,
           scheduledDate,
@@ -50,6 +50,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       Navigator.pop(context, newTask);
     }
   }
+
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? pickedDate = await showDatePicker(
